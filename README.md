@@ -15,5 +15,5 @@ go get github.com/getlantern/systray
 go build
 # zum Kompilieren ausführen
 # Im Anschluss kann _radar_ gestartet werden
-radar -user USERNAME -passwd PASSWORD --viwer IMAGEVIEWER
+radar -user USERNAME -passwd PASSWORD --viewer IMAGEVIEWER
 ```
