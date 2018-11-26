@@ -11,5 +11,9 @@ go get github.com/getlantern/systray
 
 
 ```
+# in den Projektornder wechseln und
+go build
+# zum Kompilieren ausführen
+# Im Anschluss kann _radar_ gestartet werden
 radar -user USERNAME -passwd PASSWORD --viwer IMAGEVIEWER
 ```
