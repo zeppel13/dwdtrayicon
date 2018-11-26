@@ -1,3 +1,8 @@
+// Copyright Sebastian Kind 2018
+
+// radar <- NAME FINDEN ist ein Wrapper für pcmet, um Wetterradardaten
+// direkt aus dem Desktop laden zu können.
+
 package main
 
 import (
