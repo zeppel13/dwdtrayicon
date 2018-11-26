@@ -1,7 +1,7 @@
 # dwdtrayicon
 
-Zum Kompilieren muss go installiert sein. Außerdem wird für die
-installation systray gebraucht.
+Zum Kompilieren muss go installiert sein. Außerdem besteht eine
+Abhängigkeit zur Bibliothek systray
 
 ```
 #systray installieren
