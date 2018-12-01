@@ -176,12 +176,21 @@ func authLoad(link string) string {
 	passwd := passwdStr
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", link, nil)
-	check(err)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("check connection")
+	}
 	req.SetBasicAuth(*username, *passwd)
 	resp, err := client.Do(req)
-	check(err)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("check connection")
+	}
 	bodyText, err := ioutil.ReadAll(resp.Body)
-	check(err)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("check connection")
+	}
 	return string(bodyText)
 }
 
