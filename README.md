@@ -1,5 +1,7 @@
 # dwdtrayicon
 
+https://sebastiankind.de/
+
 ![example.png](https://raw.githubusercontent.com/zeppel13/dwdtrayicon/master/example.png)
 
 Zum Kompilieren muss go installiert sein. Außerdem besteht eine
