@@ -2,6 +2,8 @@
 
 https://sebastiankind.de/
 
+Dieses Programm ermöglicht es, einige Wetterdaten:={Radarbilder, Satellitenbilder} aus pcmet bequem aus seiner Taskleiste/Panel/Trayiconhost zu betrachten, ohne zuvor erst auf pcment -> https://www.flugwetter.de/ zu wechseln.
+
 ![example.png](https://raw.githubusercontent.com/zeppel13/dwdtrayicon/master/example.png)
 
 Zum Kompilieren muss go installiert sein. Außerdem besteht eine
