@@ -53,6 +53,8 @@ func onReady() {
 	// menu items
 	mEuro := systray.AddMenuItem("Radar Europa", "Öffnet Regenradar in neuem Fenster")
 	mDe := systray.AddMenuItem("Radar Deutschland", "Öffnet Regenradar in neuem Fenster")
+	mDeN := systray.AddMenuItem("Radar Deutschland Nord", "Öffnet Regenradar in neuem Fenster")
+	mDeS := systray.AddMenuItem("Radar Deutschland Süd", "Öffnet Regenradar in neuem Fenster")
 	mAlpen := systray.AddMenuItem("Radar Alpen", "Öffnet Regenradar in neuem Fenster")
 	systray.AddSeparator()
 	mSatEuro := systray.AddMenuItem("IR RGB Sat Europa", "Öffnet Satellitenbilder  in neuem Fenster")
@@ -75,6 +77,10 @@ func onReady() {
 			pcmet("eu")
 		case <-mDe.ClickedCh:
 			pcmet("rx")
+		case <-mDeS.ClickedCh:
+			pcmet("rxs")
+		case <-mDeN.ClickedCh:
+			pcmet("rxn")
 		case <-mAlpen.ClickedCh:
 			pcmet("fa")
 		case <-mSatEuro.ClickedCh:
@@ -104,7 +110,7 @@ func pcmet(region string) {
 
 	path := ""
 	switch region {
-	case "fa", "eu", "rx":
+	case "fa", "eu", "rx", "rxs", "rxn", "rxm":
 		path = "https://www.flugwetter.de/fw/scripts/getimg.php?src=rad/"
 	default:
 		path = "https://www.flugwetter.de/fw/scripts/getimg.php?src=sat/"
