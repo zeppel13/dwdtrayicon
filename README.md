@@ -1,4 +1,4 @@
-# dwdtrayicon
+# dwdtrayicon (nogui branch, no bloated gogtk3 build dependencies, easy to build) 
 
 https://sebastiankind.de/
 
