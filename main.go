@@ -3,6 +3,12 @@
 // radar <- NAME FINDEN ist ein Wrapper für pcmet, um Wetterradardaten
 // direkt aus dem Desktop laden zu können.
 
+// no gui brach
+
+// remove gui stuff
+
+// place this on server and download images convert the to webp reduce size lal
+
 package main
 
 import (
@@ -17,92 +23,88 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/getlantern/systray"
 )
 
 var limit int = 8
-var usernameStr, passwdStr, viewerStr *string
+var usernameStr, passwdStr, viewerStr, pathStr *string
 
 func main() {
 	// flagparsing
 	usernameStr = flag.String("user", "", "pcmet Benutzername")
 	passwdStr = flag.String("passwd", "", "pcmet Passwort")
 	viewerStr = flag.String("viewer", "eom", "Programm für Bilbetrachtung auswählen")
+	mapStr := flag.String("map", "de", "Karte die abgerufen werden soll")
+	pathStr = flag.String("path", "", "Pfad wo Bilder gespeichert werden (leer falls default tmpdir")
+
 	flag.Parse() //wichtig
 	if *usernameStr == "" || *viewerStr == "" {
 		log.Fatalf("Username/Password missing please use radar -user NAME -passwd yourPASSWORD")
 	}
 
-	onExit := func() { // boilerplate code for systray
-		fmt.Println("Startin onExit")
-		now := time.Now()
-		ioutil.WriteFile(fmt.Sprintf(`on_exot_&d.txt`, now.UnixNano()), []byte(now.String()), 0644)
-		fmt.Println("Finished onExit")
-	}
-	systray.Run(onReady, onExit)
+	// los gehts
 
+	pcmet(*mapStr)
 }
 
-// systray GUI
-func onReady() {
-	systray.SetIcon(Data)
-	systray.SetTitle("Radar")
-	systray.SetTooltip("DWD pc_met Wetterinformationen")
+// // systray GUI
+// func onReady() {
+// 	systray.SetIcon(Data)
+// 	systray.SetTitle("Radar")
+// 	systray.SetTooltip("DWD pc_met Wetterinformationen")
 
-	// menu items
-	mEuro := systray.AddMenuItem("Radar Europa", "Öffnet Regenradar in neuem Fenster")
-	mDe := systray.AddMenuItem("Radar Deutschland", "Öffnet Regenradar in neuem Fenster")
-	mDeN := systray.AddMenuItem("Radar Deutschland Nord", "Öffnet Regenradar in neuem Fenster")
-	mDeS := systray.AddMenuItem("Radar Deutschland Süd", "Öffnet Regenradar in neuem Fenster")
-	mAlpen := systray.AddMenuItem("Radar Alpen", "Öffnet Regenradar in neuem Fenster")
-	systray.AddSeparator()
-	mSatEuro := systray.AddMenuItem("IR RGB Sat Europa", "Öffnet Satellitenbilder  in neuem Fenster")
-	mSatDE := systray.AddMenuItem("IR RGB Sat Deutschland", "Öffnet Satellitenbilder in neuem Fenster")
-	systray.AddSeparator()
-	mLimitToggle := systray.AddMenuItem("8 Bilder -> 35 auswählen", "Bilderlimit auswählen")
+// 	// menu items
+// 	mEuro := systray.AddMenuItem("Radar Europa", "Öffnet Regenradar in neuem Fenster")
+// 	mDe := systray.AddMenuItem("Radar Deutschland", "Öffnet Regenradar in neuem Fenster")
+// 	mDeN := systray.AddMenuItem("Radar Deutschland Nord", "Öffnet Regenradar in neuem Fenster")
+// 	mDeS := systray.AddMenuItem("Radar Deutschland Süd", "Öffnet Regenradar in neuem Fenster")
+// 	mAlpen := systray.AddMenuItem("Radar Alpen", "Öffnet Regenradar in neuem Fenster")
+// 	systray.AddSeparator()
+// 	mSatEuro := systray.AddMenuItem("IR RGB Sat Europa", "Öffnet Satellitenbilder  in neuem Fenster")
+// 	mSatDE := systray.AddMenuItem("IR RGB Sat Deutschland", "Öffnet Satellitenbilder in neuem Fenster")
+// 	systray.AddSeparator()
+// 	mLimitToggle := systray.AddMenuItem("8 Bilder -> 35 auswählen", "Bilderlimit auswählen")
 
-	mQuitOrig := systray.AddMenuItem("Beenden", "Radar beenden")
+// 	mQuitOrig := systray.AddMenuItem("Beenden", "Radar beenden")
 
-	go func() {
-		<-mQuitOrig.ClickedCh
-		fmt.Println("Requesting quit")
-		systray.Quit()
-		fmt.Println("Finished quitting")
-	}()
+// 	go func() {
+// 		<-mQuitOrig.ClickedCh
+// 		fmt.Println("Requesting quit")
+// 		systray.Quit()
+// 		fmt.Println("Finished quitting")
+// 	}()
 
-	for {
-		select {
-		case <-mEuro.ClickedCh:
-			pcmet("eu")
-		case <-mDe.ClickedCh:
-			pcmet("rx")
-		case <-mDeS.ClickedCh:
-			pcmet("rxs")
-		case <-mDeN.ClickedCh:
-			pcmet("rxn")
-		case <-mAlpen.ClickedCh:
-			pcmet("fa")
-		case <-mSatEuro.ClickedCh:
-			pcmet("ir_rgb_eu")
-		case <-mSatDE.ClickedCh:
-			pcmet("ir_rgb_mdl")
-		case <-mLimitToggle.ClickedCh:
-			if limit == 8 {
-				limit = 35
-				mLimitToggle.SetTitle("35 Bilder -> 8 auswählen")
-			} else {
-				limit = 8
-				mLimitToggle.SetTitle("8 Bilder -> 35 auswählen")
-			}
-		case <-mQuitOrig.ClickedCh:
-			systray.Quit()
-			fmt.Println("Quit now")
-			return
-		}
-	}
+// 	for {
+// 		select {
+// 		case <-mEuro.ClickedCh:
+// 			pcmet("eu")
+// 		case <-mDe.ClickedCh:
+// 			pcmet("rx")
+// 		case <-mDeS.ClickedCh:
+// 			pcmet("rxs")
+// 		case <-mDeN.ClickedCh:
+// 			pcmet("rxn")
+// 		case <-mAlpen.ClickedCh:
+// 			pcmet("fa")
+// 		case <-mSatEuro.ClickedCh:
+// 			pcmet("ir_rgb_eu")
+// 		case <-mSatDE.ClickedCh:
+// 			pcmet("ir_rgb_mdl")
+// 		case <-mLimitToggle.ClickedCh:
+// 			if limit == 8 {
+// 				limit = 35 // i think this was the max amount of images on the server
+// 				mLimitToggle.SetTitle("35 Bilder -> 8 auswählen")
+// 			} else {
+// 				limit = 8
+// 				mLimitToggle.SetTitle("8 Bilder -> 35 auswählen")
+// 			}
+// 		case <-mQuitOrig.ClickedCh:
+// 			systray.Quit()
+// 			fmt.Println("Quit now")
+// 			return
+// 		}
+// 	}
 
-}
+// }
 
 // Aus der Wetterapp übernommen
 //
@@ -120,9 +122,14 @@ func pcmet(region string) {
 	imageString := getImageListString(authLoad(dwdRadar))
 	images := makeSlice(imageString)
 
-	tempdir, err := ioutil.TempDir("", "radarImages")
-	check(err)
-	defer os.RemoveAll(tempdir)
+	tempdir := ""
+	if *pathStr == "" {
+		tempdir, err := ioutil.TempDir("", "radarImages")
+		check(err)
+		defer os.RemoveAll(tempdir)
+	} else {
+		tempdir = *pathStr
+	}
 
 	fmt.Println("Downloading images")
 	for i, image := range images {
@@ -130,7 +137,7 @@ func pcmet(region string) {
 		png := authLoad(path + image)
 		//fmt.Println(path + image)
 		//		time.Sleep(time.Second * 1)
-		tmp := filepath.Join(tempdir, fmt.Sprintf("%002d", i))
+		tmp := filepath.Join(tempdir, fmt.Sprintf("%002d", i)) //fixme add extension
 		err := ioutil.WriteFile(tmp, []byte(png), 0644)
 		check(err)
 	}
@@ -226,6 +233,10 @@ func check(err error) {
 // Bildbetrachter
 func view(dirstring string) {
 	//Standard is eom eye of mate for me
+	if *viewerStr == "none" {
+		return
+	}
+
 	eom := exec.Command(*viewerStr, dirstring)
 	eom.Run()
 }
