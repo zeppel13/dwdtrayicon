@@ -32,7 +32,7 @@ import (
 var limit int = 8
 var usernameStr, passwdStr, viewerStr, pathStr *string
 var compressBool *bool
-var compressLevel *int
+var compressLevel, maxImagesInt *int
 
 var COMPRESSION_LEVEL = 20 // 1..100
 
@@ -45,6 +45,7 @@ func main() {
 	pathStr = flag.String("path", "", "Pfad wo Bilder gespeichert werden (leer falls default tmpdir")
 	compressBool = flag.Bool("compress", false, "JPEG Compression, wenn nicht angeben werden PNGs gespeichert")
 	compressLevel = flag.Int("clevel", 15, "JPEG Compression, compress wird automatisch gesetzt")
+	maxImagesInt = flag.Int("max", 235666, "Download first n available images")
 
 	flag.Parse() //wichtig
 	if *usernameStr == "" || *viewerStr == "" {
@@ -151,6 +152,7 @@ func pcmet(region string) {
 
 	fmt.Println("Downloading images")
 	for i, image := range images {
+
 		//go mySpinner()
 		pngData := []byte(authLoad(path + image))
 		//fmt.Println(path + image)
@@ -160,20 +162,28 @@ func pcmet(region string) {
 
 		// compressImages
 		if *compressBool {
+
 			fmt.Println(tmp)
+
+			// BUG bei den Satellitenbilder könnte das auch ein JPEG sein.
 			img, err := png.Decode(bytes.NewReader(pngData))
+
 			check(err)
 			jpgData := compress(img)
 			err = ioutil.WriteFile(tmp, jpgData, 0644)
 			check(err)
 		} else {
+			// png not compressed
 			err := ioutil.WriteFile(tmp, pngData, 0644)
 			check(err)
 		}
 
-		// png not compressed
-
 		check(err)
+
+		if *maxImagesInt-1 == i {
+			break
+		}
+
 	}
 	fmt.Println("Download complete")
 	fmt.Println(tempdir)
