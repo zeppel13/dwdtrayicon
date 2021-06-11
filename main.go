@@ -13,8 +13,12 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
+	"image"
+	"image/jpeg"
+	"image/png"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,6 +31,10 @@ import (
 
 var limit int = 8
 var usernameStr, passwdStr, viewerStr, pathStr *string
+var compressBool *bool
+var compressLevel *int
+
+var COMPRESSION_LEVEL = 20 // 1..100
 
 func main() {
 	// flagparsing
@@ -35,11 +43,15 @@ func main() {
 	viewerStr = flag.String("viewer", "eom", "Programm für Bilbetrachtung auswählen")
 	mapStr := flag.String("map", "de", "Karte die abgerufen werden soll")
 	pathStr = flag.String("path", "", "Pfad wo Bilder gespeichert werden (leer falls default tmpdir")
+	compressBool = flag.Bool("compress", false, "JPEG Compression, wenn nicht angeben werden PNGs gespeichert")
+	compressLevel = flag.Int("clevel", 15, "JPEG Compression, compress wird automatisch gesetzt")
 
 	flag.Parse() //wichtig
 	if *usernameStr == "" || *viewerStr == "" {
 		log.Fatalf("Username/Password missing please use radar -user NAME -passwd yourPASSWORD")
 	}
+
+	COMPRESSION_LEVEL = *compressLevel
 
 	// los gehts
 
@@ -119,7 +131,13 @@ func pcmet(region string) {
 	}
 	//	path := "/fw/scripts/getimg.php?src=rad/"
 	dwdRadar := "https://www.flugwetter.de/fw/bilder/rad/index.htm?type=" + region
+
+	// fixme dieses Teil mit waitgroup parallel ausführen lassen, hier wartet man auf den DWD Server
+
 	imageString := getImageListString(authLoad(dwdRadar))
+
+	// fixme
+
 	images := makeSlice(imageString)
 
 	tempdir := ""
@@ -134,11 +152,27 @@ func pcmet(region string) {
 	fmt.Println("Downloading images")
 	for i, image := range images {
 		//go mySpinner()
-		png := authLoad(path + image)
+		pngData := []byte(authLoad(path + image))
 		//fmt.Println(path + image)
 		//		time.Sleep(time.Second * 1)
 		tmp := filepath.Join(tempdir, fmt.Sprintf("%002d", i)) //fixme add extension
-		err := ioutil.WriteFile(tmp, []byte(png), 0644)
+		err := ioutil.WriteFile(tmp, pngData, 0644)
+
+		// compressImages
+		if *compressBool {
+			fmt.Println(tmp)
+			img, err := png.Decode(bytes.NewReader(pngData))
+			check(err)
+			jpgData := compress(img)
+			err = ioutil.WriteFile(tmp, jpgData, 0644)
+			check(err)
+		} else {
+			err := ioutil.WriteFile(tmp, pngData, 0644)
+			check(err)
+		}
+
+		// png not compressed
+
 		check(err)
 	}
 	fmt.Println("Download complete")
@@ -217,6 +251,15 @@ func getImageListString(bodyString string) string {
 	}
 	return ""
 
+}
+
+// compress replace all png images with compressed JPEGs
+func compress(img image.Image) []byte {
+	options := &jpeg.Options{Quality: COMPRESSION_LEVEL}
+	buf := new(bytes.Buffer)
+	err := jpeg.Encode(buf, img, options)
+	check(err)
+	return buf.Bytes()
 }
 
 // Wenn irgendein Fehler auftauch -> Programm abstürzen lassen
